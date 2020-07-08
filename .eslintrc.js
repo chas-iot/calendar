@@ -95,7 +95,7 @@ module.exports = {
     ],
     'max-len': [
       'error',
-      80
+      100
     ],
     'multiline-ternary': [
       'error',
