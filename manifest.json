@@ -1,10 +1,10 @@
 {
-  "version": "0.0.1",
+  "version": "0.0.2",
   "id": "calendar",
   "name": "Calendar",
   "short_name": "Calendar",
   "description": "Provides calendar management of the working week, holidays, and other event dates. This is to support rules such as not switching on a wakeup alarm on public or personal holidays.",
-  "author": "Chas IoT",
+  "author": "Chas-IoT",
   "license": "MPL-2.0",
   "gateway_specific_settings": {
     "webthings": {
