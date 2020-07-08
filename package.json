@@ -1,0 +1,49 @@
+{
+  "version": "0.0.1",
+  "name": "calendar",
+  "display_name": "Calendar",
+  "description": "Provides calendar management of the working week, holidays, and other event dates. This is to support rules such as not switching on a wakeup alarm on public or personal holidays.",
+  "author": "Chas IoT",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint ."
+  },
+  "keywords": [
+    "mozilla",
+    "iot",
+    "adapter",
+    "calendar",
+    "holiday",
+    "working week"
+  ],
+  "homepage": "https://github.com/chas-iot/calendar",
+  "license": "MPL-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chas-iot/calendar.git"
+  },
+  "bugs": {
+    "url": "https://github.com/chas-iot/calendar/issues"
+  },
+  "devDependencies": {
+    "babel-eslint": "^10.1.0",
+    "eslint": "^6.8.0"
+  },
+  "files": [
+    "LICENSE",
+    "README.md",
+    "SHA256SUMS",
+    "src/calendar.js",
+    "index.js",
+    "manifest.json"
+  ],
+  "moziot": {
+    "api": {
+      "min": 2,
+      "max": 2
+    },
+    "type": "adapter",
+    "plugin": true,
+    "exec": "{nodeLoader} {path}"
+  }
+}
