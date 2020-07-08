@@ -19,6 +19,7 @@ function getOffsetToHour() {
 // get the local date in ISO format
 function getTodayStr() {
   const now = new Date();
+  // eslint-disable-next-line max-len
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 }
 
@@ -90,6 +91,7 @@ class CalendarAdapter extends Adapter {
 
         // use some 'Western' defaults
         if (!config.workWeek) {
+          // eslint-disable-next-line max-len
           config.workWeek = {day0: false, day1: true, day2: true, day3: true, day4: true, day5: true, day6: false};
         }
         if (!config.dateList) {
@@ -127,8 +129,8 @@ class CalendarAdapter extends Adapter {
       .then(() => {
         this.updateCalendar();
 
-        // at 1 second past the next hour, kick off an hourly job to check is the day a holiday or other special date
-        // this is to handle local timezone and daylight savings
+        // at 1 second past the next hour, kick off an hourly job to check is the day a holiday
+        // or other special date this is to handle local timezone and daylight savings
         setTimeout(() => {
           setInterval(() => this.updateCalendar(), HOUR);
 
