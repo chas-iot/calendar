@@ -1,8 +1,8 @@
 {
-  "version": "0.0.2",
+  "version": "0.0.3",
   "name": "calendar",
   "display_name": "Calendar",
-  "description": "Provides calendar management of the working week, holidays, and other event dates. This is to support rules such as not switching on a wakeup alarm on public or personal holidays.",
+  "description": "Provides calendar management of the working week, holidays, and other event dates. This is to support rules such as disabling a wakeup alarm on public or personal holidays.",
   "author": "Chas-IoT",
   "main": "index.js",
   "scripts": {

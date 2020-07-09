@@ -1,9 +1,9 @@
 {
-  "version": "0.0.2",
+  "version": "0.0.3",
   "id": "calendar",
   "name": "Calendar",
   "short_name": "Calendar",
-  "description": "Provides calendar management of the working week, holidays, and other event dates. This is to support rules such as not switching on a wakeup alarm on public or personal holidays.",
+  "description": "Provides calendar management of the working week, holidays, and other event dates. This is to support rules such as disabling a wakeup alarm on public or personal holidays.",
   "author": "Chas-IoT",
   "license": "MPL-2.0",
   "gateway_specific_settings": {
@@ -54,29 +54,42 @@
               "title": "Sunday is a working day"
             }
           }
-
         },
         "dateList": {
           "type": "array",
           "title": "Date list",
-          "description": "A list of dates in ISO format 20YY-MM-DD, with an optional reason and an optional 'tag' for use in rules. dateType: 0 = holiday (the default); 1 = other (for rules, suggest use the tag); 2 = working day (a reverse holiday, i.e. a day that is not normally a working day is flagged as a working day). These dates may be public holidays or private/personal vacation dates or any other date where the rules need additional input. Invalid dates, such as 2020-02-31 will be stored but ignored.",
           "items": {
             "type": "object",
+            "required": ["date", "dateType"],
+            "default": {
+              "dateType": "holiday"
+            },
             "properties": {
               "date": {
                 "type": "string",
-                "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}$"
-              },
-              "reason": {
-                "type": "string"
-              },
-              "rulesTag": {
-                "type": "string"
+                "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}$",
+                "title": "Date",
+                "description": "in ISO format 20YY-MM-DD. Invalid dates, such as 2020-02-31, will be stored and ignored"
               },
               "dateType": {
-                "type": "integer",
-                "minimum": 0,
-                "maximum": 2
+                "type": "string",
+                "enum": ["holiday", "working", "event"],
+                "title": "Date type",
+                "description": "'holiday' should be self-explanatory. 'working' is for a 'reverse holiday' where a day of the week that is not usually a working day is set to working. 'event' is useful for rules processing of dates, particularly in combination with a 'Tag'."
+              },
+              "reason": {
+                "type": "string",
+                "title": "Reason / Description"
+              },
+              "tag": {
+                "type": "string",
+                "title": "Tag",
+                "description": "an optional tag that may be useful in rules"
+              },
+              "source": {
+                "type": "string",
+                "title": "Source",
+                "readOnly": true
               }
             }
           }

@@ -60,7 +60,7 @@ class CalendarDevice extends Device {
       type: 'string',
       readOnly: true,
     }));
-    this.properties.set('rulesTag', new CalendarProperty(this, 'rulesTag', {
+    this.properties.set('tag', new CalendarProperty(this, 'tag', {
       title: 'Rules Tag',
       type: 'string',
       readOnly: true,
@@ -79,7 +79,7 @@ class CalendarAdapter extends Adapter {
     this.holiday = device.findProperty('isHoliday');
     this.workingDay = device.findProperty('isWorkingDay');
     this.reason = device.findProperty('reason');
-    this.rulesTag = device.findProperty('rulesTag');
+    this.tag = device.findProperty('tag');
 
     this.db = new Database(manifest.id);
     this.db.open()
@@ -89,7 +89,7 @@ class CalendarAdapter extends Adapter {
       .then((config) => {
         this.config = config;
 
-        // use some 'Western' defaults
+        // use a default 'Western' working week
         if (!config.workWeek) {
           // eslint-disable-next-line max-len
           config.workWeek = {day0: false, day1: true, day2: true, day3: true, day4: true, day5: true, day6: false};
@@ -125,6 +125,21 @@ class CalendarAdapter extends Adapter {
         while (this.dateList[0].date < dateStr) {
           this.dateList.shift();
         }
+        // fixme - remove in a later version
+        this.dateList.forEach((item) => {
+          if (typeof item.dateType === 'number') {
+            // the format has changed
+            /* eslint-disable curly */
+            if (item.dateType === 0) item.dateType = 'holiday';
+            if (item.dateType === 1) item.dateType = 'other';
+            if (item.dateType === 2) item.dateType = 'working';
+            /* eslint-enable curly */
+            if (item.rulesTag) {
+              item.tag = item.rulesTag;
+              delete item.rulesTag;
+            }
+          }
+        });
       })
       .then(() => {
         this.updateCalendar();
@@ -161,12 +176,12 @@ class CalendarAdapter extends Adapter {
           this.workWeek[new Date().getDay()]));
 
       this.reason.setTo(this.dateList[0].reason);
-      this.rulesTag.setTo(this.dateList[0].rulesTag);
+      this.tag.setTo(this.dateList[0].tag);
     } else {
       this.holiday.setTo(false);
       this.workingDay.setTo(this.workWeek[new Date().getDay()]);
       this.reason.setTo('');
-      this.rulesTag.setTo('');
+      this.tag.setTo('');
     }
   }
 
