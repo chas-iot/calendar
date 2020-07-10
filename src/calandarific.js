@@ -23,9 +23,9 @@ function applyParams(req, params) {
 function getAPIdates(from, key, country, merge, mergeContext) {
   const apiDates = [];
   if (from === 'calendarific') {
-    const reqStr = applyParams(`${ENDPOINT}${key}`, {country: country,
-                                                     year: new Date().getFullYear(),
-                                                     type: 'national'});
+    const reqStr = applyParams(`${ENDPOINT}${key}`, {type: 'national',
+                                                     country: country,
+                                                     year: new Date().getFullYear()});
     console.log(reqStr);
     fetch(reqStr)
       .then((response) => {
@@ -48,9 +48,9 @@ function getAPIdates(from, key, country, merge, mergeContext) {
         }
       })
       .then(() => {
-        const reqStr = applyParams(`${ENDPOINT}${key}`, {country: country,
-                                                         year: new Date().getFullYear() + 1,
-                                                         type: 'national'});
+        const reqStr = applyParams(`${ENDPOINT}${key}`, {type: 'national',
+                                                         country: country,
+                                                         year: new Date().getFullYear() + 1});
         console.log(reqStr);
         return fetch(reqStr);
       })

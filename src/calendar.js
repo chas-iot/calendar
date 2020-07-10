@@ -26,11 +26,11 @@ function getTodayStr() {
 }
 
 function normaliseDatesArray(dates, dateStr) {
+  // eslint-disable-next-line curly
+  if (dates.length === 0) return;
+
   let changed = false;
-  /* eslint-disable curly */
-  if (!dates) return;
-  if (dates.length == 0) return;
-  /* eslint-enable curly */
+
   dates.sort((a, b) => {
     if (a.date === b.date && a.dateType === b.dateType) {
       return 0;
@@ -50,10 +50,14 @@ function normaliseDatesArray(dates, dateStr) {
     changed = true;
     return 0;
   });
+
   while (dates.length > 0 && dates[0].date < dateStr) {
     dates.shift();
     changed = true;
   }
+
+  // fixme - remove duplicates
+
   return changed;
 }
 
@@ -121,9 +125,8 @@ class CalendarAdapter extends Adapter {
         return this.db.loadConfig();
       })
       .then((config) => {
-        config.dateList = config.dateList || [];
-
         this.config = config;
+        config.dateList = config.dateList || [];
         this.dateList = config.dateList;
 
         // use a default 'Western' working week
@@ -143,33 +146,14 @@ class CalendarAdapter extends Adapter {
 
         // sort, and remove expired dates
         // the date checks depend on these invariants
-        // would be nice to deal with duplicates too
         const dateStr = getTodayStr();
-        if (this.dateList.length > 0) {
-          normaliseDatesArray(this.dateList, dateStr);
-
-          // fixme - remove in a later version
-          this.dateList.forEach((item) => {
-            if (typeof item.dateType === 'number') {
-            // the format has changed
-            /* eslint-disable curly */
-              if (item.dateType === 0) item.dateType = 'holiday';
-              if (item.dateType === 1) item.dateType = 'other';
-              if (item.dateType === 2) item.dateType = 'working';
-            /* eslint-enable curly */
-            }
-            if (item.rulesTag) {
-              item.tag = item.rulesTag;
-              delete item.rulesTag;
-            }
-          });
-        }
+        normaliseDatesArray(this.dateList, dateStr);
       })
       .then(() => {
         this.updateCalendar();
 
-        // at 1 second past the next hour, kick off an hourly job to check is the day a holiday
-        // or other special date this is to handle local timezone and daylight savings
+        // at 1 second past the next hour, kick off an hourly job to check is the day a holiday or
+        // other special date. This is to handle the local timezone and daylight savings, if any
         setTimeout(() => {
           setInterval(() => this.updateCalendar(), HOUR);
 
@@ -186,7 +170,7 @@ class CalendarAdapter extends Adapter {
     const dateStr = getTodayStr();
     let changed = false;
 
-    // if calandarific is configured
+    // if calandarific is configured and dates have not been requested today
     if (this.config.calendarific &&
       this.config.calendarific.apiKey &&
       this.config.calendarific.location &&
@@ -219,11 +203,14 @@ class CalendarAdapter extends Adapter {
     } else {
       this.holiday.setTo(false);
       this.workingDay.setTo(this.workWeek[new Date().getDay()]);
-      this.reason.setTo('');
       this.tag.setTo('');
+
+      // fixme - make this the day of the week?
+      this.reason.setTo('');
     }
   }
 
+  // passed to the dates API requester to merge any received dates into the configured dates
   merge(apiDates, that) {
     if (!that) {
       that = this;
@@ -231,18 +218,18 @@ class CalendarAdapter extends Adapter {
     const dateStr = getTodayStr();
     normaliseDatesArray(apiDates, dateStr);
 
-    // get a temporary list of only the dates marked as holidays, otherwise it becomes too confusing
-    const holidays = [];
-    that.dateList && that.dateList.forEach((item, i) => {
-      if (item.dateType === 'holiday') {
-        holidays.push({date: item.date,
-                       source: item.source,
-                       reason: item.reason,
-                       index: i});
-      }
-    });
-
     if (apiDates.length > 0) {
+      // get a temporary list of the dates marked as holidays, otherwise it becomes too confusing
+      const holidays = [];
+      that.dateList && that.dateList.forEach((item, i) => {
+        if (item.dateType === 'holiday') {
+          holidays.push({date: item.date,
+                         source: item.source,
+                         reason: item.reason,
+                         index: i});
+        }
+      });
+
       let apiPos = 0;
       let holPos = 0;
       let changed = false;
@@ -264,7 +251,7 @@ class CalendarAdapter extends Adapter {
             holPos += 1;
           } else {
             // we need to delete from the dateList & rebuild, and restart the loop
-            // this may be related to the hoiday date being brought forward, so it is complicated
+            // this may be related to the holiday date being brought forward, so it is complicated
             console.log('deleting holiday', JSON.stringify(that.dateList[holidays[holPos].index]));
             changed = true;
             that.dateList.splice(holidays[holPos].index, 1);
@@ -295,6 +282,7 @@ class CalendarAdapter extends Adapter {
           }
 
           // don't increment the apiPos because there may be duplicate dates in the holidays array
+          // these dates may be duplicate but with genuinely different reasons, so this is needed
           holPos += 1;
 
         // not a good place to be
