@@ -1,5 +1,5 @@
 {
-  "version": "0.1.1",
+  "version": "0.1.2",
   "name": "calendar",
   "display_name": "Calendar",
   "description": "Provides calendar management of the working week, holidays, and other event dates. This is to support rules such as disabling a wakeup alarm on public or personal holidays.",
@@ -34,6 +34,7 @@
     "README.md",
     "SHA256SUMS",
     "src/calendar.js",
+    "src/calandarific.js",
     "index.js",
     "manifest.json"
   ],
