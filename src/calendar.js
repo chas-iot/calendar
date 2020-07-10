@@ -27,6 +27,10 @@ function getTodayStr() {
 
 function normaliseDatesArray(dates, dateStr) {
   let changed = false;
+  /* eslint-disable curly */
+  if (!dates) return;
+  if (dates.length == 0) return;
+  /* eslint-enable curly */
   dates.sort((a, b) => {
     if (a.date === b.date && a.dateType === b.dateType) {
       return 0;
@@ -46,13 +50,12 @@ function normaliseDatesArray(dates, dateStr) {
     changed = true;
     return 0;
   });
-  while (dates[0].date < dateStr) {
+  while (dates.length > 0 && dates[0].date < dateStr) {
     dates.shift();
     changed = true;
   }
   return changed;
 }
-
 
 const {
   Adapter,
@@ -118,17 +121,16 @@ class CalendarAdapter extends Adapter {
         return this.db.loadConfig();
       })
       .then((config) => {
+        config.dateList = config.dateList || [];
+
         this.config = config;
+        this.dateList = config.dateList;
 
         // use a default 'Western' working week
         if (!config.workWeek) {
           // eslint-disable-next-line max-len
           config.workWeek = {day0: false, day1: true, day2: true, day3: true, day4: true, day5: true, day6: false};
         }
-        if (!config.dateList) {
-          config.dateList = [{date: '2099-01-01'}];
-        }
-
         this.workWeek = [
           config.workWeek.day0,
           config.workWeek.day1,
@@ -138,14 +140,13 @@ class CalendarAdapter extends Adapter {
           config.workWeek.day5,
           config.workWeek.day6,
         ];
-        this.dateList = config.dateList;
 
         // sort, and remove expired dates
         // the date checks depend on these invariants
         // would be nice to deal with duplicates too
         const dateStr = getTodayStr();
-        if (this.DateList && this.DateList.length > 0) {
-          normaliseDatesArray(this.DateList, dateStr);
+        if (this.dateList.length > 0) {
+          normaliseDatesArray(this.dateList, dateStr);
 
           // fixme - remove in a later version
           this.dateList.forEach((item) => {
@@ -204,7 +205,7 @@ class CalendarAdapter extends Adapter {
         .catch((e) => console.error(e));
 
     // we don't need to wait for the database save to complete before updating the gateway
-    if (dateStr === this.dateList[0].date) {
+    if (this.dateList.length > 0 && dateStr === this.dateList[0].date) {
       this.holiday.setTo(this.dateList[0].dateType === 'holiday');
 
       // working day calculations :)
@@ -232,7 +233,7 @@ class CalendarAdapter extends Adapter {
 
     // get a temporary list of only the dates marked as holidays, otherwise it becomes too confusing
     const holidays = [];
-    that.dateList.forEach((item, i) => {
+    that.dateList && that.dateList.forEach((item, i) => {
       if (item.dateType === 'holiday') {
         holidays.push({date: item.date,
                        source: item.source,
@@ -241,11 +242,11 @@ class CalendarAdapter extends Adapter {
       }
     });
 
-    if (apiDates.length > 0 && holidays.length > 0) {
+    if (apiDates.length > 0) {
       let apiPos = 0;
       let holPos = 0;
       let changed = false;
-      while (apiPos < apiDates.length && holPos < holidays.length) {
+      while (apiPos < apiDates.length || holPos < holidays.length) {
         // check is the api date > dateList date
         if (holPos >= holidays.length ||
             apiDates[apiPos].date < holidays[holPos].date) {
@@ -293,8 +294,10 @@ class CalendarAdapter extends Adapter {
             that.dateList[holidays[holPos].index].source = apiDates[apiPos].source;
           }
 
-          apiPos += 1;
+          // don't increment the apiPos because there may be duplicate dates in the holidays array
           holPos += 1;
+
+        // not a good place to be
         } else {
           throw new Error('merge from API failed due to programming error');
         }
