@@ -167,12 +167,12 @@ class CalendarAdapter extends Adapter {
     }
     // we don't need to wait for the database save to complete before updating the gateway
     if (dateStr === this.dateList[0].date) {
-      this.holiday.setTo(this.dateList[0].dateType === 0);
+      this.holiday.setTo(this.dateList[0].dateType === 'holiday');
 
       // working day calculations :)
       this.workingDay.setTo(
-        this.dateList[0].dateType !== 0 &&
-        (this.dateList[0].dateType === 2 ||
+        this.dateList[0].dateType !== 'holiday' &&
+        (this.dateList[0].dateType === 'working' ||
           this.workWeek[new Date().getDay()]));
 
       this.reason.setTo(this.dateList[0].reason);
