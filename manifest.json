@@ -1,5 +1,5 @@
 {
-  "version": "0.0.5",
+  "version": "0.1.0",
   "id": "calendar",
   "name": "Calendar",
   "short_name": "Calendar",
@@ -55,9 +55,29 @@
             }
           }
         },
+        "calendarific":{
+          "type": "object",
+          "title": "Calendarific.com",
+          "description": "optional connection details for API provider Calendarific.com",
+          "properties": {
+            "apiKey": {
+              "type": "string",
+              "description": "enter the API key provided by Calendarific.com"
+            },
+            "location": {
+              "type": "string",
+              "description": "the location code for the required calendar. For example 'sg' or 'us-ny'. See Calendarific.com documentation"
+            },
+            "lastRetrieved": {
+              "type": "string",
+              "readOnly": true
+            }
+          }
+        },
         "dateList": {
           "type": "array",
           "title": "Date list",
+          "description": "Notes: 1) Invalid dates, such as 2020-02-31, will be stored and ignored. 2) The Date Types: 'holiday' should be self-explanatory. 'working' is for a 'reverse holiday' where a day of the week that is not usually a working day is set to working. 'event' is useful for rules processing of dates, particularly in combination with a 'Tag'.",
           "items": {
             "type": "object",
             "required": ["date", "dateType"],
@@ -69,13 +89,12 @@
                 "type": "string",
                 "pattern": "^20[0-9]{2}-[0-9]{2}-[0-9]{2}$",
                 "title": "Date",
-                "description": "in ISO format 20YY-MM-DD. Invalid dates, such as 2020-02-31, will be stored and ignored"
+                "description": "in ISO format 20YY-MM-DD"
               },
               "dateType": {
                 "type": "string",
                 "enum": ["holiday", "working", "event"],
-                "title": "Date type",
-                "description": "'holiday' should be self-explanatory. 'working' is for a 'reverse holiday' where a day of the week that is not usually a working day is set to working. 'event' is useful for rules processing of dates, particularly in combination with a 'Tag'."
+                "title": "Date type"
               },
               "reason": {
                 "type": "string",
