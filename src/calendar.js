@@ -40,10 +40,12 @@ function normaliseDatesArray(dates, dateStr) {
     } else if (a.date > b.date) {
       changed = true;
       return +1;
-    } else if (a.dateType < b.dateType) {
+
+    // note reversal of comparison, so sorting is 'working' first, then 'event', and 'holiday' last
+    } else if (a.dateType > b.dateType) {
       changed = true;
       return -1;
-    } else if (a.dateType > b.dateType) {
+    } else if (a.dateType < b.dateType) {
       changed = true;
       return +1;
     }
@@ -51,12 +53,28 @@ function normaliseDatesArray(dates, dateStr) {
     return 0;
   });
 
+  // remove expired dates
   while (dates.length > 0 && dates[0].date < dateStr) {
     dates.shift();
     changed = true;
   }
 
-  // fixme - remove duplicates
+  // remove duplicates
+  if (dates.length > 1) {
+    for (let i = dates.length - 2; i >= 0; i--) {
+      const a = dates[i];
+      const b = dates[i + 1];
+      if (a.date === b.date && a.dateType === b.dateType) {
+        changed = true;
+        /* eslint-disable curly */
+        if (!a.reason || (a.reason && a.reason === '')) a.reason = b.reason;
+        if (!a.source || (a.source && a.source === '')) a.source = b.source;
+        if (!a.tag || (a.tag && a.tag === '')) a.tag = b.tag;
+        /* eslint-enable curly */
+        dates.splice(i + 1, 1);
+      }
+    }
+  }
 
   return changed;
 }
@@ -246,8 +264,7 @@ class CalendarAdapter extends Adapter {
         } else if (apiPos > apiDates.length ||
           apiDates[apiPos].date > holidays[holPos].date) {
           // ignore manually entered dates
-          if (holidays[holPos].source === '' || !holidays[holPos].source) {
-            console.log('skipping manually entered holiday');
+          if (!holidays[holPos].source || holidays[holPos].source === '') {
             holPos += 1;
           } else {
             // we need to delete from the dateList & rebuild, and restart the loop
