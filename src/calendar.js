@@ -10,7 +10,7 @@
 
 const HOUR = 60 * 60 * 1000;
 
-const getAPIdates = require('./calandarific');
+const getAPIdates = require('./calendarific');
 
 // get the milliseconds to 1 second past the next hour
 function getOffsetToHour() {
@@ -170,7 +170,7 @@ class CalendarAdapter extends Adapter {
     const dateStr = getTodayStr();
     let changed = false;
 
-    // if calandarific is configured and dates have not been requested today
+    // if calendarific is configured and dates have not been requested today
     if (this.config.calendarific &&
       this.config.calendarific.apiKey &&
       this.config.calendarific.location &&

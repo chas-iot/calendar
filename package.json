@@ -34,7 +34,7 @@
     "README.md",
     "SHA256SUMS",
     "src/calendar.js",
-    "src/calandarific.js",
+    "src/calendarific.js",
     "index.js",
     "manifest.json"
   ],
