@@ -22,5 +22,4 @@ shasum --algorithm 256 ${TARFILE} > ${TARFILE}.sha256sum
 
 rm -rf SHA256SUMS package
 
-npm install --devel
-npm install --production
+npm install
