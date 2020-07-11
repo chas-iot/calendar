@@ -39,7 +39,7 @@ function getAPIdates(from, key, country, merge, mergeContext) {
           json.response.holidays.forEach((item) => {
             apiDates.push({date: item.date.iso,
                            dateType: 'holiday',
-                           source: 'calendarific',
+                           source: 'Calendarific.com',
                            reason: item.name});
           });
         } else {
@@ -65,7 +65,7 @@ function getAPIdates(from, key, country, merge, mergeContext) {
           json.response.holidays.forEach((item) => {
             apiDates.push({date: item.date.iso,
                            dateType: 'holiday',
-                           source: 'calendarific',
+                           source: 'Calendarific.com',
                            reason: item.name});
           });
         } else {
