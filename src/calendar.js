@@ -121,6 +121,11 @@ class CalendarDevice extends Device {
       type: 'string',
       readOnly: true,
     }));
+    this.properties.set('source', new CalendarProperty(this, 'source', {
+      title: 'Source',
+      type: 'string',
+      readOnly: true,
+    }));
   }
 }
 
@@ -136,6 +141,7 @@ class CalendarAdapter extends Adapter {
     this.workingDay = device.findProperty('isWorkingDay');
     this.reason = device.findProperty('reason');
     this.tag = device.findProperty('tag');
+    this.source = device.findProperty('source');
 
     this.db = new Database(manifest.id);
     this.db.open()
@@ -216,12 +222,24 @@ class CalendarAdapter extends Adapter {
         (this.dateList[0].dateType === 'working' ||
           this.workWeek[new Date().getDay()]));
 
-      this.reason.setTo(this.dateList[0].reason);
-      this.tag.setTo(this.dateList[0].tag);
+      let i = 0;
+      while (i < this.dateList.length && dateStr === this.dateList[i].date) {
+        if (this.reason.getValue() === '') {
+          this.reason.setTo(this.dateList[i].reason) || '';
+        }
+        if (this.tag.getValue() === '') {
+          this.tag.setTo(this.dateList[i].tag) || '';
+        }
+        if (this.source.getValue().length === '') {
+          this.source.setTo(this.dateList[i].source) || '';
+        }
+        i++;
+      }
     } else {
       this.holiday.setTo(false);
       this.workingDay.setTo(this.workWeek[new Date().getDay()]);
       this.tag.setTo('');
+      this.source.setTo('');
 
       // fixme - make this the day of the week?
       this.reason.setTo('');
