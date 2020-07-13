@@ -25,6 +25,23 @@ function getTodayStr() {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 }
 
+// get the day name
+// fixme - localise the day name
+function getDayName() {
+  // return new Intl.DateTimeFormat({weekday: 'long'}).format(new Date());
+  const t = new Date().getDay();
+  /* eslint-disable curly */
+  if (t === 0) return 'Sunday';
+  if (t === 1) return 'Monday';
+  if (t === 2) return 'Tuesday';
+  if (t === 3) return 'Wednesday';
+  if (t === 4) return 'Thursday';
+  if (t === 5) return 'Friday';
+  if (t === 6) return 'Saturday';
+  /* eslint-enable curly */
+}
+
+// sort, remove duplicates and other transformations required to handle dates
 function normaliseDatesArray(dates, dateStr) {
   // eslint-disable-next-line curly
   if (dates.length === 0) return;
@@ -63,13 +80,6 @@ function normaliseDatesArray(dates, dateStr) {
   if (dates.length > 1) {
     for (let i = dates.length - 2; i >= 0; i--) {
       const a = dates[i];
-      if (a.date === dateStr) {
-        /* eslint-disable curly */
-        if (!a.reason) a.reason = '';
-        if (!a.tag) a.tag = '';
-        if (!a.source) a.source = '';
-        /* eslint-enable curly */
-      }
       const b = dates[i + 1];
       if (a.date === b.date && a.dateType === b.dateType) {
         changed = true;
@@ -123,7 +133,7 @@ class CalendarDevice extends Device {
       readOnly: true,
     }));
     this.properties.set('reason', new CalendarProperty(this, 'reason', {
-      title: 'Reason',
+      title: 'Description',
       type: 'string',
       readOnly: true,
     }));
@@ -236,24 +246,28 @@ class CalendarAdapter extends Adapter {
       let i = 0;
       while (i < this.dateList.length && dateStr === this.dateList[i].date) {
         if (!this.reason.get() || this.reason.get() === '') {
-          this.reason.set(this.dateList[i].reason);
+          this.reason.set(this.dateList[i].reason || '');
         }
         if (!this.tag.get() || this.tag.get() === '') {
-          this.tag.set(this.dateList[i].tag);
+          this.tag.set(this.dateList[i].tag || '');
         }
         if (!this.source.get() || this.source.get() === '') {
-          this.source.set(this.dateList[i].source);
+          this.source.set(this.dateList[i].source || '');
         }
         i++;
+      }
+      if (this.source.get() === '') {
+        this.source.set('added locally');
+      }
+      if (this.reason.get() === '') {
+        this.reason.set(getDayName());
       }
     } else {
       this.holiday.set(false);
       this.workingDay.set(this.workWeek[new Date().getDay()]);
       this.tag.set('');
       this.source.set('');
-
-      // fixme - make this the day of the week?
-      this.reason.set('');
+      this.reason.set(getDayName());
     }
   }
 
