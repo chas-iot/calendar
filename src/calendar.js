@@ -59,10 +59,17 @@ function normaliseDatesArray(dates, dateStr) {
     changed = true;
   }
 
-  // remove duplicates
+  // remove duplicates, fix values
   if (dates.length > 1) {
     for (let i = dates.length - 2; i >= 0; i--) {
       const a = dates[i];
+      if (a.date === dateStr) {
+        /* eslint-disable curly */
+        if (!a.reason) a.reason = '';
+        if (!a.tag) a.tag = '';
+        if (!a.source) a.source = '';
+        /* eslint-enable curly */
+      }
       const b = dates[i + 1];
       if (a.date === b.date && a.dateType === b.dateType) {
         changed = true;
@@ -89,7 +96,11 @@ const {
 const manifest = require('../manifest.json');
 
 class CalendarProperty extends Property {
-  setTo(value) {
+  get() {
+    return this.value;
+  }
+
+  set(value) {
     this.setCachedValueAndNotify(value);
   }
 }
@@ -214,35 +225,35 @@ class CalendarAdapter extends Adapter {
 
     // we don't need to wait for the database save to complete before updating the gateway
     if (this.dateList.length > 0 && dateStr === this.dateList[0].date) {
-      this.holiday.setTo(this.dateList[0].dateType === 'holiday');
+      this.holiday.set(this.dateList[0].dateType === 'holiday');
 
       // working day calculations :)
-      this.workingDay.setTo(
+      this.workingDay.set(
         this.dateList[0].dateType !== 'holiday' &&
         (this.dateList[0].dateType === 'working' ||
           this.workWeek[new Date().getDay()]));
 
       let i = 0;
       while (i < this.dateList.length && dateStr === this.dateList[i].date) {
-        if (this.reason.getValue() === '') {
-          this.reason.setTo(this.dateList[i].reason) || '';
+        if (!this.reason.get() || this.reason.get() === '') {
+          this.reason.set(this.dateList[i].reason);
         }
-        if (this.tag.getValue() === '') {
-          this.tag.setTo(this.dateList[i].tag) || '';
+        if (!this.tag.get() || this.tag.get() === '') {
+          this.tag.set(this.dateList[i].tag);
         }
-        if (this.source.getValue().length === '') {
-          this.source.setTo(this.dateList[i].source) || '';
+        if (!this.source.get() || this.source.get() === '') {
+          this.source.set(this.dateList[i].source);
         }
         i++;
       }
     } else {
-      this.holiday.setTo(false);
-      this.workingDay.setTo(this.workWeek[new Date().getDay()]);
-      this.tag.setTo('');
-      this.source.setTo('');
+      this.holiday.set(false);
+      this.workingDay.set(this.workWeek[new Date().getDay()]);
+      this.tag.set('');
+      this.source.set('');
 
       // fixme - make this the day of the week?
-      this.reason.setTo('');
+      this.reason.set('');
     }
   }
 
