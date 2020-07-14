@@ -10,7 +10,15 @@
 
 const HOUR = 60 * 60 * 1000;
 
-const getAPIdates = require('./calendarific');
+const manifest = require('../manifest.json');
+const {
+  Adapter,
+  Device,
+  Property,
+  Database,
+} = require('gateway-addon');
+const getAPIdates = require('./holidayAPI');
+
 
 // get the milliseconds to 1 second past the next hour
 function getOffsetToHour() {
@@ -18,12 +26,14 @@ function getOffsetToHour() {
   return ((Math.floor(NOW / HOUR) + 1) * HOUR) - NOW + 1000;
 }
 
+
 // get the local date in ISO format
 function getTodayStr() {
   const now = new Date();
   // eslint-disable-next-line max-len
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 }
+
 
 // get the day name
 // fixme - localise the day name
@@ -40,6 +50,7 @@ function getDayName() {
   if (t === 6) return 'Saturday';
   /* eslint-enable curly */
 }
+
 
 // sort, remove duplicates and other transformations required to handle dates
 function normaliseDatesArray(dates, dateStr) {
@@ -96,14 +107,6 @@ function normaliseDatesArray(dates, dateStr) {
   return changed;
 }
 
-const {
-  Adapter,
-  Device,
-  Property,
-  Database,
-} = require('gateway-addon');
-
-const manifest = require('../manifest.json');
 
 class CalendarProperty extends Property {
   get() {
@@ -114,6 +117,7 @@ class CalendarProperty extends Property {
     this.setCachedValueAndNotify(value);
   }
 }
+
 
 class CalendarDevice extends Device {
   constructor(adapter, id) {
@@ -149,6 +153,7 @@ class CalendarDevice extends Device {
     }));
   }
 }
+
 
 class CalendarAdapter extends Adapter {
   constructor(addonManager) {
@@ -189,6 +194,14 @@ class CalendarAdapter extends Adapter {
           config.workWeek.day6,
         ];
 
+        config.api = config.api || {};
+        if (config.api.country) {
+          config.api.country = config.api.country.trim();
+        }
+        if (config.api.region) {
+          config.api.region = config.api.region.trim();
+        }
+
         // sort, and remove expired dates
         // the date checks depend on these invariants
         const dateStr = getTodayStr();
@@ -211,20 +224,18 @@ class CalendarAdapter extends Adapter {
       .catch((e) => console.error(e));
   }
 
+
   updateCalendar() {
     const dateStr = getTodayStr();
     let changed = false;
 
-    // if calendarific is configured and dates have not been requested today
-    if (this.config.calendarific &&
-      this.config.calendarific.apiKey &&
-      this.config.calendarific.location &&
-      dateStr > (this.config.calendarific.lastRetrieved || '1970')) {
+    // if the api is configured and dates have not been requested today
+    const api = this.config.api;
+    if (api && api.provider &&
+        dateStr > (api.lastRetrieved || '1970')) {
       changed = true;
-      this.config.calendarific.lastRetrieved = dateStr;
-      getAPIdates('calendarific',
-                  this.config.calendarific.apiKey,
-                  this.config.calendarific.location,
+      api.lastRetrieved = dateStr;
+      getAPIdates(api,
                   this.merge,
                   this);
     }
@@ -271,6 +282,7 @@ class CalendarAdapter extends Adapter {
     }
   }
 
+
   // passed to the dates API requester to merge any received dates into the configured dates
   merge(apiDates, that) {
     if (!that) {
@@ -284,10 +296,7 @@ class CalendarAdapter extends Adapter {
       const holidays = [];
       that.dateList && that.dateList.forEach((item, i) => {
         if (item.dateType === 'holiday') {
-          holidays.push({date: item.date,
-                         source: item.source,
-                         reason: item.reason,
-                         index: i});
+          holidays.push({date: item.date, index: i});
         }
       });
 
@@ -297,32 +306,37 @@ class CalendarAdapter extends Adapter {
       while (apiPos < apiDates.length || holPos < holidays.length) {
         // check is the api date > dateList date
         if (holPos >= holidays.length ||
-            apiDates[apiPos].date < holidays[holPos].date) {
-          console.log('adding new holiday', JSON.stringify(apiDates[apiPos], null, 2));
+            (apiPos < apiDates.length &&
+             apiDates[apiPos].date < holidays[holPos].date)) {
+          console.log('adding new holiday',
+                      JSON.stringify(apiDates[apiPos], null, 2));
           changed = true;
           that.dateList.push(apiDates[apiPos]);
           apiPos += 1;
 
         // check is the api date > dateList date
-        } else if (apiPos > apiDates.length ||
-          apiDates[apiPos].date > holidays[holPos].date) {
+        } else if (apiPos >= apiDates.length ||
+                   (holPos < holidays.length &&
+                    apiDates[apiPos].date > holidays[holPos].date)) {
           // ignore manually entered dates
-          if (!holidays[holPos].source || holidays[holPos].source === '') {
+          if (apiPos < apiDates.length &&
+              (!that.dateList[holidays[holPos].index].source ||
+               that.dateList[holidays[holPos].index].source === '')) {
             holPos += 1;
           } else {
             // we need to delete from the dateList & rebuild, and restart the loop
             // this may be related to the holiday date being brought forward, so it is complicated
-            console.log('deleting holiday', JSON.stringify(that.dateList[holidays[holPos].index]));
+            console.log('deleting holiday',
+                        JSON.stringify(that.dateList[holidays[holPos].index], null, 2));
             changed = true;
             that.dateList.splice(holidays[holPos].index, 1);
-            normaliseDatesArray(that.dateList);
+
+            // delete all element then re-create
             holidays.splice(0, holidays.length);
+            normaliseDatesArray(that.dateList);
             that.dateList.forEach((item, i) => {
               if (item.dateType === 'holiday') {
-                holidays.push({date: item.date,
-                               source: item.source,
-                               reason: item.reason,
-                               index: i});
+                holidays.push({date: item.date, index: i});
               }
             });
             apiPos = 0;
@@ -332,22 +346,27 @@ class CalendarAdapter extends Adapter {
         // handle matching date
         } else if (apiDates[apiPos].date === holidays[holPos].date) {
           // check are minor details different
-          if (apiDates[apiPos].reason !== holidays[holPos].reason ||
-              apiDates[apiPos].source !== holidays[holPos].source) {
-            console.log('changing date reason and source',
-                        JSON.stringify(apiDates[apiPos].source, null, 2));
+          if (apiDates[apiPos].reason !== that.dateList[holidays[holPos].index].reason) {
             changed = true;
             that.dateList[holidays[holPos].index].reason = apiDates[apiPos].reason;
-            that.dateList[holidays[holPos].index].source = apiDates[apiPos].source;
+            console.log('changing date reason',
+                        JSON.stringify(that.dateList[holidays[holPos].index], null, 2));
           }
-
-          // don't increment the apiPos because there may be duplicate dates in the holidays array
-          // these dates may be duplicate but with genuinely different reasons, so this is needed
+          if (apiDates[apiPos].source !== that.dateList[holidays[holPos].index].source) {
+            changed = true;
+            that.dateList[holidays[holPos].index].source = apiDates[apiPos].source;
+            console.log('changing date source',
+                        JSON.stringify(that.dateList[holidays[holPos].index], null, 2));
+          }
           holPos += 1;
+          apiPos += 1;
 
         // not a good place to be
         } else {
-          throw new Error('merge from API failed due to programming error');
+          that.api.status = 'merge from API failed due to programming error';
+          console.error('merge from API failed due to programming error');
+          holPos = holidays.length;
+          apiPos = apiDates.length;
         }
       }
 
