@@ -1,6 +1,5 @@
 # calendar
-
-Provides calendar management of the working week, holidays, and other event dates.
+An addon for the Mozilla IoT Gateway that provides calendar management of the working week, holidays, and other event dates.
 This is to support rules such as not switching on a wakeup alarm on public or personal holidays, or triggering an automatic light display on a birthday.
 
 Currently, this has optional use of the holiday APIs from calendarific.com or from date.nager.at.
