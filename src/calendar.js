@@ -217,6 +217,22 @@ class CalendarAdapter extends Adapter {
           config.api.region = config.api.region.trim();
           config.changed = true;
         }
+        // fixme - remove in a later release
+        if (config.calendarific) {
+          if (config.calendarific.apiKey &&
+            config.calendarific.apiKey !== '' &&
+            config.calendarific.location &&
+            config.calendarific.location !== '') {
+            if (!config.api) {
+              config.api = {};
+            }
+            config.api.provider = 'calendarific.com';
+            config.api.key = config.calendarific.apiKey;
+            config.api.country = config.calendarific.location;
+          }
+          delete config.calendarific;
+          config.changed = true;
+        }
 
         // sort, and remove expired dates
         // the date checks depend on these invariants

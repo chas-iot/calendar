@@ -55,25 +55,6 @@
             }
           }
         },
-        "calendarific":{
-          "type": "object",
-          "title": "Calendarific.com",
-          "description": "DEPRECATED: connection details for API provider Calendarific.com - will be removed in a future release, kept to allow copying of apiKey",
-          "properties": {
-            "apiKey": {
-              "type": "string",
-              "description": "enter the API key provided by Calendarific.com"
-            },
-            "location": {
-              "type": "string",
-              "description": "the location code for the required calendar. For example 'sg' or 'us-ny'. See Calendarific.com documentation"
-            },
-            "lastRetrieved": {
-              "type": "string",
-              "readOnly": true
-            }
-          }
-        },
         "api":{
           "type": "object",
           "title": "Connection details for holiday API provider",
