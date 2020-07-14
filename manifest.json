@@ -14,7 +14,7 @@
       "strict_min_version": "0.10.0"
     }
   },
-  "homepage_url": "https://github.com/chas-iot/calendar",
+  "homepage_url": "https://github.com/chas-iot/calendar#readme",
   "manifest_version": 1,
   "options": {
     "schema": {
