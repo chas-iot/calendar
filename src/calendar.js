@@ -183,6 +183,7 @@ class CalendarAdapter extends Adapter {
         if (!config.workWeek) {
           // eslint-disable-next-line max-len
           config.workWeek = {day0: false, day1: true, day2: true, day3: true, day4: true, day5: true, day6: false};
+          config.changed = true;
         }
         this.workWeek = [
           config.workWeek.day0,
@@ -194,18 +195,25 @@ class CalendarAdapter extends Adapter {
           config.workWeek.day6,
         ];
 
-        config.api = config.api || {};
-        if (config.api.country) {
-          config.api.country = config.api.country.trim();
+        if (!config.api) {
+          config.api = {};
+          config.changed = true;
         }
-        if (config.api.region) {
+        if (config.api.country && config.api.country !== config.api.country.trim()) {
+          config.api.country = config.api.country.trim();
+          config.changed = true;
+        }
+        if (config.api.region && config.api.region !== config.api.region.trim()) {
           config.api.region = config.api.region.trim();
+          config.changed = true;
         }
 
         // sort, and remove expired dates
         // the date checks depend on these invariants
         const dateStr = getTodayStr();
-        normaliseDatesArray(this.dateList, dateStr);
+        if (normaliseDatesArray(this.dateList, dateStr)) {
+          config.changed = true;
+        }
       })
       .then(() => {
         this.updateCalendar();
@@ -220,29 +228,36 @@ class CalendarAdapter extends Adapter {
         , getOffsetToHour());
       })
       // save the revised data after everything else is initialised
-      .then(() => this.db.saveConfig(this.config))
+      .then(() => {
+        if (this.config.changed) {
+          delete this.config.changed;
+          this.db.saveConfig(this.config);
+        }
+      })
       .catch((e) => console.error(e));
   }
 
 
   updateCalendar() {
     const dateStr = getTodayStr();
-    let changed = false;
 
     // if the api is configured and dates have not been requested today
     const api = this.config.api;
     if (api && api.provider &&
         dateStr > (api.lastRetrieved || '1970')) {
-      changed = true;
+      this.config.changed = true;
       api.lastRetrieved = dateStr;
-      getAPIdates(api,
-                  this.merge,
-                  this);
+      getAPIdates(api, this, this.merge, this.setStatus);
     }
-    changed = changed || normaliseDatesArray(this.dateList, dateStr);
-    changed &&
-      this.db.saveConfig(this.config)
-        .catch((e) => console.error(e));
+
+    if (normaliseDatesArray(this.dateList, dateStr)) {
+      this.config.changed = true;
+    }
+
+    if (this.config.changed) {
+      delete this.config.changed;
+      this.db.saveConfig(this.config);
+    }
 
     // we don't need to wait for the database save to complete before updating the gateway
     if (this.dateList.length > 0 && dateStr === this.dateList[0].date) {
@@ -288,8 +303,7 @@ class CalendarAdapter extends Adapter {
     if (!that) {
       that = this;
     }
-    const dateStr = getTodayStr();
-    normaliseDatesArray(apiDates, dateStr);
+    normaliseDatesArray(apiDates, getTodayStr());
 
     if (apiDates.length > 0) {
       // get a temporary list of the dates marked as holidays, otherwise it becomes too confusing
@@ -302,7 +316,6 @@ class CalendarAdapter extends Adapter {
 
       let apiPos = 0;
       let holPos = 0;
-      let changed = false;
       while (apiPos < apiDates.length || holPos < holidays.length) {
         // check is the api date > dateList date
         if (holPos >= holidays.length ||
@@ -310,7 +323,7 @@ class CalendarAdapter extends Adapter {
              apiDates[apiPos].date < holidays[holPos].date)) {
           console.log('adding new holiday',
                       JSON.stringify(apiDates[apiPos], null, 2));
-          changed = true;
+          that.config.changed = true;
           that.dateList.push(apiDates[apiPos]);
           apiPos += 1;
 
@@ -328,7 +341,7 @@ class CalendarAdapter extends Adapter {
             // this may be related to the holiday date being brought forward, so it is complicated
             console.log('deleting holiday',
                         JSON.stringify(that.dateList[holidays[holPos].index], null, 2));
-            changed = true;
+            that.config.changed = true;
             that.dateList.splice(holidays[holPos].index, 1);
 
             // delete all element then re-create
@@ -347,13 +360,13 @@ class CalendarAdapter extends Adapter {
         } else if (apiDates[apiPos].date === holidays[holPos].date) {
           // check are minor details different
           if (apiDates[apiPos].reason !== that.dateList[holidays[holPos].index].reason) {
-            changed = true;
+            that.config.changed = true;
             that.dateList[holidays[holPos].index].reason = apiDates[apiPos].reason;
             console.log('changing date reason',
                         JSON.stringify(that.dateList[holidays[holPos].index], null, 2));
           }
           if (apiDates[apiPos].source !== that.dateList[holidays[holPos].index].source) {
-            changed = true;
+            that.config.changed = true;
             that.dateList[holidays[holPos].index].source = apiDates[apiPos].source;
             console.log('changing date source',
                         JSON.stringify(that.dateList[holidays[holPos].index], null, 2));
@@ -363,19 +376,29 @@ class CalendarAdapter extends Adapter {
 
         // not a good place to be
         } else {
-          that.api.status = 'merge from API failed due to programming error';
+          that.config.api.status = 'merge from API failed due to programming error';
+          that.config.changed = true;
           console.error('merge from API failed due to programming error');
           holPos = holidays.length;
           apiPos = apiDates.length;
         }
       }
-
-      if (changed) {
-        normaliseDatesArray(that.dateList);
-        that.db.saveConfig(that.config)
-          .catch((e) => console.error(e));
-      }
     }
+
+    if (that.config.changed) {
+      normaliseDatesArray(that.dateList);
+      delete that.config.changed;
+      that.db.saveConfig(that.config)
+        .catch((e) => console.error(e));
+    }
+  }
+
+  setStatus(message, that) {
+    if (!that) {
+      that = this;
+    }
+    that.config.api.status = message;
+    that.config.changed = true;
   }
 
 }

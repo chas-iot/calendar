@@ -10,24 +10,24 @@
 
 const fetch = require('node-fetch');
 
-function getAPIdates(api, merge, context) {
+function getAPIdates(api, context, merge, setStatus) {
   if (api.provider === 'calendarific.com') {
-    return getCalendarificDates(api, merge, context);
+    return getCalendarificDates(api, context, merge, setStatus);
   } else if (api.provider === 'date.nager.at') {
-    return getNagerDates(api, merge, context);
+    return getNagerDates(api, context, merge, setStatus);
   }
   return {};
 }
 
-function getCalendarificDates(api, merge, context) {
+function getCalendarificDates(api, context, merge, setStatus) {
   const ENDPOINT = 'https://calendarific.com/api/v2/holidays?&api_key=';
   const apiDates = [];
   if (!api.key) {
-    api.status = `no Key configured for ${api.provider}`;
+    setStatus(`no Key configured for ${api.provider}`);
     throw new Error(`no Key configured for ${api.provider}`);
   }
   if (!api.country) {
-    api.status = `no Country configured for ${api.provider}`;
+    setStatus(`no Country configured for ${api.provider}`);
     throw new Error(`no Country configured for ${api.provider}`);
   }
   const reqStr = applyParams(`${ENDPOINT}${api.key}`,
@@ -38,7 +38,7 @@ function getCalendarificDates(api, merge, context) {
   fetch(reqStr)
     .then((response) => {
       if (!response.ok) {
-        api.status = `api response status: ${response.status} - ${response.statusText}`;
+        setStatus(`api response status: ${response.status} - ${response.statusText}`);
         throw new Error(`api response status: ${response.status} - ${response.statusText}`);
       }
       return response.json();
@@ -53,7 +53,7 @@ function getCalendarificDates(api, merge, context) {
         });
       } else {
         console.error(JSON.stringify(json, null, 2));
-        api.status = 'missing dates in response';
+        setStatus('missing dates in response');
         throw new Error('missing dates in response');
       }
     })
@@ -67,7 +67,7 @@ function getCalendarificDates(api, merge, context) {
     })
     .then((response) => {
       if (!response.ok) {
-        api.status = `api response status: ${response.status} - ${response.statusText}`;
+        setStatus(`api response status: ${response.status} - ${response.statusText}`);
         throw new Error(`api response status: ${response.status} - ${response.statusText}`);
       }
       return response.json();
@@ -82,24 +82,27 @@ function getCalendarificDates(api, merge, context) {
         });
       } else {
         console.error(JSON.stringify(json, null, 2));
-        api.status = 'missing dates in response';
+        setStatus('missing dates in response');
         throw new Error('missing dates in response');
       }
-      api.status = 'ok';
+      setStatus('ok');
       merge(apiDates, context);
     })
-    .catch((e) => console.error(e));
+    .catch((e) => {
+      console.error(e);
+      merge([], context);
+    });
 }
 
-function getNagerDates(api, merge, context) {
+function getNagerDates(api, context, merge, setStatus) {
   const ENDPOINT = 'https://date.nager.at/api/v2/publicholidays';
   const apiDates = [];
   if (!api.country) {
-    api.status = `no country configured for ${api.provider}`;
+    setStatus(`no country configured for ${api.provider}`);
     throw new Error(`no country configured for ${api.provider}`);
   }
   if (!api.region) {
-    api.status = `no region configured for ${api.provider}`;
+    setStatus(`no region configured for ${api.provider}`);
     throw new Error(`no region configured for ${api.provider}`);
   }
   const reqStr = `${ENDPOINT}/${new Date().getFullYear()}/${api.country.toUpperCase()}`;
@@ -107,7 +110,7 @@ function getNagerDates(api, merge, context) {
   fetch(reqStr)
     .then((response) => {
       if (!response.ok) {
-        api.status = `api response status: ${response.status} - ${response.statusText}`;
+        setStatus(`api response status: ${response.status} - ${response.statusText}`);
         throw new Error(`api response status: ${response.status} - ${response.statusText}`);
       }
       return response.json();
@@ -134,7 +137,7 @@ function getNagerDates(api, merge, context) {
     })
     .then((response) => {
       if (!response.ok) {
-        api.status = `api response status: ${response.status} - ${response.statusText}`;
+        setStatus(`api response status: ${response.status} - ${response.statusText}`);
         throw new Error(`api response status: ${response.status} - ${response.statusText}`);
       }
       return response.json();
@@ -153,10 +156,13 @@ function getNagerDates(api, merge, context) {
                          reason: item.localName});
         }
       });
-      api.status = 'ok';
+      setStatus('ok');
       merge(apiDates, context);
     })
-    .catch((e) => console.error(e));
+    .catch((e) => {
+      console.error(e);
+      merge([], context);
+    });
 }
 
 function applyParams(req, params) {
