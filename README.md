@@ -8,7 +8,12 @@ Please treat free API sources as an input aid rather than a reliable source of h
 The API provider may not be able to keep up with these changes or may choose to not publish these changes to their free tier users.
 
 ## Functionality
-- Provides a single device with a default name of today.
+- Provides a single device with a default name of today. The Properties for the current date are:
+- - a Holiday indicator
+- - a Working day indicator
+- - a Description or Reason for anything special about the date or weekday name if there's nothing more specific
+- - a Tag that may be useful in rules
+- - the Source of the holiday (eg. API website)
 - Configuration of
 - - the working / non-working days of the week
 - - connection details for a Holiday API provider, with a Status (readonly) to help detect and resolve mis-configuration
@@ -18,13 +23,11 @@ The API provider may not be able to keep up with these changes or may choose to 
 - - the Date Type (required). The types are one of Working, Event, or Holiday
 - - a Reason or Description (optional). Why this date is of interest, in human readable form.
 - - a Tag (optional). Designed more for machine-readable processing, might be most useful with Event dates
-- - the Source (readonly). Shows where the date was input from, eg. a Holiday API
-- Thing Properties show for the current date
-- - a Holiday indicator
-- - a Working day indicator, i.e. a reverse holiday that marks a date that is usually a non-working day to be a working day
-- - a Description or Reason for anything special about the date or weekday name if there's nothing more specific
-- - a Tag that may be useful in rules
-- - the Source of the holiday (eg. API website)
+- - the Source (readonly). Shows where the date was input from, eg. a Holiday API website
+- Date Types
+- - Holiday
+- - Working, i.e. a reverse holiday that marks a date that is usually a non-working day to be a working day
+- - Event, any other date that might need rules processing. Recommend that this is used in combination with a Tag
 - Properties updated every hour to allow for different timezones and daylight savings
 - - expired dates are rolled off the configuration list
 - - if there are multiple entries for the same Date and Type, then the duplicates are merged
