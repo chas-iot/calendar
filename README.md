@@ -9,34 +9,34 @@ The API provider may not be able to keep up with these changes or may choose to 
 
 ## Functionality
 - Provides a single device with a default name of today. The Properties for the current date are:
-- - a Holiday indicator
-- - a Working day indicator
-- - a Description or Reason for anything special about the date or weekday name if there's nothing more specific
-- - a Tag that may be useful in rules
-- - the Source of the holiday (eg. API website)
+- - a Holiday indicator;
+- - a Working day indicator;
+- - a Description or Reason for anything special about the date, or the weekday name if there's nothing more specific;
+- - a Tag that may be useful in rules; and
+- - the Source of the holiday (eg. API website).
 - Configuration of
-- - the working / non-working days of the week
-- - connection details for a Holiday API provider, with a Status (readonly) to help detect and resolve mis-configuration
-- - a list of future Dates
-- Each date may be configured with
-- - the Date in ISO format 20YY-MM-DD (required). Yes, this supports only 80 years of holidays. Invalid dates such as 2020-02-31  or 2020-99-99 will be stored and ignored and eventually expire.
-- - the Date Type (required). The types are one of Working, Event, or Holiday
-- - a Reason or Description (optional). Why this date is of interest, in human readable form.
-- - a Tag (optional). Designed more for machine-readable processing, might be most useful with Event dates
-- - the Source (readonly). Shows where the date was input from, eg. a Holiday API website
+- - the working / non-working days of the week;
+- - connection details for a Holiday API provider, with a Status (readonly) to help detect and resolve mis-configuration; and
+- - a list of future Dates.
+- Each date may be configured with:
+- - the Date in ISO format 20YY-MM-DD (required). Yes, this supports only 80 years of holidays. Invalid dates such as 2020-02-31  or 2020-99-99 will be stored and ignored and eventually expire;
+- - the Date Type (required);
+- - a Reason or Description (optional) that notes why this date is of interest, in human readable form;
+- - a Tag (optional) that is targeted more for machine-readable processing, and might be most useful with Event dates; and
+- - the Source (readonly), that shows where the date was captured from, eg. a Holiday API website.
 - Date Types
-- - Holiday
-- - Working, i.e. a reverse holiday that marks a date that is usually a non-working day to be a working day
-- - Event, any other date that might need rules processing. Recommend that this is used in combination with a Tag
+- - Holiday;
+- - Working, i.e. a reverse holiday that marks a date, which is usually a non-working day, to be a working day; and
+- - Event, any other date that might need rules processing. Recommend that this is used in combination with a Tag.
 - Properties updated every hour to allow for different timezones and daylight savings
-- - expired dates are rolled off the configuration list
-- - if there are multiple entries for the same Date and Type, then the duplicates are merged
-- - if there are multiple entries for the same Date with different Types, then sorted so Working is most important, then Holiday, and finally Event
-- - on the Thing display, if there are multiple dates, then the Reason and Tag are filled from the most important non-blank entry.
+- - expired dates are rolled off the configuration list;
+- - if there are multiple entries for the same Date and Type, then the duplicates are merged;
+- - if there are multiple entries for the same Date with different Types, then sorted so Working is most important, then Holiday, and finally Event; and
+- - on the Thing display, if there are multiple dates, then the Reason and Tag are each filled from the most important non-blank entry.
 - Supported Holiday API providers
 - - https://calendarific.com/
 - - https://date.nager.at/
-- Criteria for further Holiday API providers
-- - have completely free access or a free access tier with at least 100 requests per month
-- - able to provide a rolling 12 months of holiday dates or the current calendar year and the next calendar year
-- - have a reasonable selection of countries and or regions
+- Criteria for further Holiday API providers:
+- - Have completely free access or a free access tier with at least 100 calendar year requests per month, or 1,000 individual holiday requests per month. There are technical reasons for this requirement.
+- - Able to provide a rolling 12 months of upcoming holiday dates or the current calendar year and the next calendar year.
+- - Have a reasonable selection of countries and or regions.
