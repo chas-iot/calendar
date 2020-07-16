@@ -36,7 +36,14 @@ The API provider may not be able to keep up with these changes or may choose to 
 - Supported Holiday API providers
 - - https://calendarific.com/
 - - https://date.nager.at/
+- Automatic holiday updates
+- - Sometimes governments add public holidays at very short notice.
+- - Some religious holidays cannot be reliably predicted until just before the occurrence, so governments add an indicative placeholder and change the actual date when it becomes known.
+- - Once per day, a new set of holidays are requested.
+- - The current providers both deliver holidays for a specified calendar year, therefore the current year and next year are requested. This uses up to 62 requests per month, if the provider has limits on requests. Other providers put their limit on the number of individual holidays requested per month.
+- - The response is merged with the existing holidays, including deleting holidays previously received from an API that are no longer tagged as holidays.
+- - Manually input holidays will be merged with API holidays. However, manually input holidays will not be deleted.
 - Criteria for further Holiday API providers:
-- - Have completely free access or a free access tier with at least 100 calendar year requests per month, or 1,000 individual holiday requests per month. There are technical reasons for this requirement.
+- - Have completely free access or a free access tier with at least 100 calendar year requests per month, or 1,000 individual holiday requests per month.
 - - Able to provide a rolling 12 months of upcoming holiday dates or the current calendar year and the next calendar year.
 - - Have a reasonable selection of countries and or regions.
