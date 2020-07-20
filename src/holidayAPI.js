@@ -23,11 +23,11 @@ function getCalendarificDates(api, context, merge, setStatus) {
   const ENDPOINT = 'https://calendarific.com/api/v2/holidays?&api_key=';
   const apiDates = [];
   if (!api.key) {
-    setStatus(`no Key configured for ${api.provider}`);
+    setStatus(`no Key configured for ${api.provider}`, context);
     throw new Error(`no Key configured for ${api.provider}`);
   }
   if (!api.country) {
-    setStatus(`no Country configured for ${api.provider}`);
+    setStatus(`no Country configured for ${api.provider}`, context);
     throw new Error(`no Country configured for ${api.provider}`);
   }
   const reqStr = applyParams(`${ENDPOINT}${api.key}`,
@@ -38,7 +38,7 @@ function getCalendarificDates(api, context, merge, setStatus) {
   fetch(reqStr)
     .then((response) => {
       if (!response.ok) {
-        setStatus(`api response status: ${response.status} - ${response.statusText}`);
+        setStatus(`api response status: ${response.status} - ${response.statusText}`, context);
         throw new Error(`api response status: ${response.status} - ${response.statusText}`);
       }
       return response.json();
@@ -53,7 +53,7 @@ function getCalendarificDates(api, context, merge, setStatus) {
         });
       } else {
         console.error(JSON.stringify(json, null, 2));
-        setStatus('missing dates in response');
+        setStatus('missing dates in response', context);
         throw new Error('missing dates in response');
       }
     })
@@ -67,7 +67,7 @@ function getCalendarificDates(api, context, merge, setStatus) {
     })
     .then((response) => {
       if (!response.ok) {
-        setStatus(`api response status: ${response.status} - ${response.statusText}`);
+        setStatus(`api response status: ${response.status} - ${response.statusText}`, context);
         throw new Error(`api response status: ${response.status} - ${response.statusText}`);
       }
       return response.json();
@@ -82,10 +82,10 @@ function getCalendarificDates(api, context, merge, setStatus) {
         });
       } else {
         console.error(JSON.stringify(json, null, 2));
-        setStatus('missing dates in response');
+        setStatus('missing dates in response', context);
         throw new Error('missing dates in response');
       }
-      setStatus('ok');
+      setStatus('ok', context);
       merge(apiDates, context);
     })
     .catch((e) => {
@@ -98,11 +98,11 @@ function getNagerDates(api, context, merge, setStatus) {
   const ENDPOINT = 'https://date.nager.at/api/v2/publicholidays';
   const apiDates = [];
   if (!api.country) {
-    setStatus(`no country configured for ${api.provider}`);
+    setStatus(`no country configured for ${api.provider}`, context);
     throw new Error(`no country configured for ${api.provider}`);
   }
   if (!api.region) {
-    setStatus(`no region configured for ${api.provider}`);
+    setStatus(`no region configured for ${api.provider}`, context);
     throw new Error(`no region configured for ${api.provider}`);
   }
   const reqStr = `${ENDPOINT}/${new Date().getFullYear()}/${api.country.toUpperCase()}`;
@@ -110,7 +110,7 @@ function getNagerDates(api, context, merge, setStatus) {
   fetch(reqStr)
     .then((response) => {
       if (!response.ok) {
-        setStatus(`api response status: ${response.status} - ${response.statusText}`);
+        setStatus(`api response status: ${response.status} - ${response.statusText}`, context);
         throw new Error(`api response status: ${response.status} - ${response.statusText}`);
       }
       return response.json();
@@ -137,7 +137,7 @@ function getNagerDates(api, context, merge, setStatus) {
     })
     .then((response) => {
       if (!response.ok) {
-        setStatus(`api response status: ${response.status} - ${response.statusText}`);
+        setStatus(`api response status: ${response.status} - ${response.statusText}`, context);
         throw new Error(`api response status: ${response.status} - ${response.statusText}`);
       }
       return response.json();
@@ -156,7 +156,7 @@ function getNagerDates(api, context, merge, setStatus) {
                          reason: item.localName});
         }
       });
-      setStatus('ok');
+      setStatus('ok', context);
       merge(apiDates, context);
     })
     .catch((e) => {
