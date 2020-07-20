@@ -231,7 +231,9 @@ class CalendarAdapter extends Adapter {
       .then(() => {
         if (this.config.changed) {
           delete this.config.changed;
-          this.db.saveConfig(this.config);
+          this.db.saveConfig(this.config)
+            .then(() => console.log('updated config'))
+            .catch((e) => console.error(e));
         }
       })
       .catch((e) => console.error(e));
@@ -256,7 +258,9 @@ class CalendarAdapter extends Adapter {
 
     if (this.config.changed) {
       delete this.config.changed;
-      this.db.saveConfig(this.config);
+      this.db.saveConfig(this.config)
+        .then(() => console.log('updated config'))
+        .catch((e) => console.error(e));
     }
 
     // we don't need to wait for the database save to complete before updating the gateway
@@ -389,6 +393,7 @@ class CalendarAdapter extends Adapter {
       normaliseDatesArray(that.dateList);
       delete that.config.changed;
       that.db.saveConfig(that.config)
+        .then(() => console.log('updated config'))
         .catch((e) => console.error(e));
     }
   }
