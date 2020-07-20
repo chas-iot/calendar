@@ -59,25 +59,24 @@ function normaliseDatesArray(dates, dateStr) {
 
   let changed = false;
 
+  // take a temporary copy of the dates array to check what what, if anything, changed
+  const t = [];
+  dates.forEach((val) => t.push({date: val.date, dateType: val.dateType}));
+
   dates.sort((a, b) => {
     if (a.date === b.date && a.dateType === b.dateType) {
       return 0;
     } else if (a.date < b.date) {
-      changed = true;
       return -1;
     } else if (a.date > b.date) {
-      changed = true;
       return +1;
 
     // note reversal of comparison, so sorting is 'working' first, then 'event', and 'holiday' last
     } else if (a.dateType > b.dateType) {
-      changed = true;
       return -1;
     } else if (a.dateType < b.dateType) {
-      changed = true;
       return +1;
     }
-    changed = true;
     return 0;
   });
 
@@ -100,6 +99,17 @@ function normaliseDatesArray(dates, dateStr) {
         if (!a.tag || (a.tag && a.tag === '')) a.tag = b.tag;
         /* eslint-enable curly */
         dates.splice(i + 1, 1);
+      }
+    }
+  }
+
+  // check for changes, with the least expensive checks first
+  changed = changed || t.length !== dates.length;
+  if (!changed) {
+    for (let i = 0; i < t.length; i++) {
+      if (t[i].date !== dates[i].date || t[i].dateType !== dates[i].dateType) {
+        changed = true;
+        i = t.length + 1;
       }
     }
   }
@@ -227,19 +237,12 @@ class CalendarAdapter extends Adapter {
         }
         , getOffsetToHour());
       })
-      // save the revised data after everything else is initialised
-      .then(() => {
-        if (this.config.changed) {
-          delete this.config.changed;
-          this.db.saveConfig(this.config)
-            .then(() => console.log('updated config'))
-            .catch((e) => console.error(e));
-        }
-      })
       .catch((e) => console.error(e));
   }
 
 
+  // hourly job to expire dates that are in the past
+  // when the current date changes, check for updates from the API
   updateCalendar() {
     const dateStr = getTodayStr();
 
@@ -247,7 +250,6 @@ class CalendarAdapter extends Adapter {
     const api = this.config.api;
     if (api && api.provider &&
         dateStr > (api.lastRetrieved || '1970')) {
-      this.config.changed = true;
       api.lastRetrieved = dateStr;
       getAPIdates(api, this, this.merge, this.setStatus);
     }
@@ -259,7 +261,7 @@ class CalendarAdapter extends Adapter {
     if (this.config.changed) {
       delete this.config.changed;
       this.db.saveConfig(this.config)
-        .then(() => console.log('updated config'))
+        .then(() => console.log('updateCalendar changed config'))
         .catch((e) => console.error(e));
     }
 
@@ -393,11 +395,13 @@ class CalendarAdapter extends Adapter {
       normaliseDatesArray(that.dateList);
       delete that.config.changed;
       that.db.saveConfig(that.config)
-        .then(() => console.log('updated config'))
+        .then(() => console.log('merge/getAPIdates changed config'))
         .catch((e) => console.error(e));
     }
   }
 
+
+  // passed to the dates API requester to allow it to update the status
   setStatus(message, that) {
     if (!that) {
       that = this;
