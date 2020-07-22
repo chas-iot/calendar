@@ -26,8 +26,9 @@ The API provider may not be able to keep up with these changes or may choose to 
 - - the Source (readonly), that shows where the date was captured from, eg. a Holiday API website.
 - Date Types
 - - Holiday;
-- - Working, i.e. a reverse holiday that marks a date to be a working day, when it is usually a non-working day; and
-- - Event, any other date that might need rules processing. Recommended that this is used in combination with a Tag.
+- - Working, i.e. a reverse holiday that marks a date to be a working day, when it is usually a non-working day;
+- - Event, any other date that might need rules processing. Recommended that this is used in combination with a Tag; and
+- - Event - annual, as event but when it expires, it is copied to occur the following year. Note that this copying is 'dumb' and does not notice working days or leap years.
 - Properties updated every hour to allow for different timezones and daylight savings
 - - expired dates are rolled off the configuration list;
 - - if there are multiple entries for the same Date and Type, then the duplicates are merged;
