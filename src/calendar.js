@@ -82,6 +82,14 @@ function normaliseDatesArray(dates, dateStr) {
 
   // remove expired dates
   while (dates.length > 0 && dates[0].date < dateStr) {
+    if (dates[0].dateType === 'event - annual') {
+      // increment the year and add a modified copy to the end of the array
+      dates[0].date =
+        `${Number.parseInt(dates[0].date.substr(0, 4)) + 1}${dates[0].date.substr(4, 6)}`;
+      console.log(dates[0].date);
+      dates.push(dates[0]);
+      // while this may unorder the dates, it will be fixed within an hour
+    }
     dates.shift();
     changed = true;
   }
@@ -267,6 +275,7 @@ class CalendarAdapter extends Adapter {
     if (api && api.provider &&
         dateStr > (api.lastRetrieved || '1970')) {
       api.lastRetrieved = dateStr;
+      this.config.changed = true;
       getAPIdates(api, this, this.merge, this.setStatus);
     }
 
