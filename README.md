@@ -28,7 +28,7 @@ The API provider may not be able to keep up with these changes or may choose to 
 - - Holiday;
 - - Working, i.e. a reverse holiday that marks a date to be a working day, when it is usually a non-working day;
 - - Event, any other date that might need rules processing. Recommended that this is used in combination with a Tag; and
-- - Event - annual, as event but when it expires, it is copied to occur the following year. Note that this copying is 'dumb' and does not notice working days or leap years.
+- - Event - annual, as event but when it expires, it is copied to re-occur the following year. Note that this copying is 'dumb' and does not notice working days or leap years.
 - Properties updated every hour to allow for different timezones and daylight savings
 - - expired dates are rolled off the configuration list;
 - - if there are multiple entries for the same Date and Type, then the duplicates are merged;
@@ -37,12 +37,14 @@ The API provider may not be able to keep up with these changes or may choose to 
 - Supported Holiday API providers
 - - https://calendarific.com/
 - - https://date.nager.at/
+- - https://holidays.abstractapi.com
 - Automatic holiday updates
 - - Sometimes governments add public holidays at very short notice.
 - - Some religious holidays cannot be reliably predicted until just before the occurrence, so governments add an indicative placeholder and change the actual date when it becomes known.
 - - Once per day, a new set of holidays are requested.
-- - The current providers both deliver holidays for a specified calendar year, therefore the current year and next year are requested. This uses up to 62 requests per month, if the provider has limits on requests. Other providers put their limit on the number of individual holidays requested per month.
-- - The response is merged with the existing holidays, including deleting holidays previously received from an API that are no longer tagged as holidays.
+- - Providers calendarific and nager both deliver holidays for a specified calendar year, therefore the current year and next year are requested. This uses up to 62 requests per month, if the provider has limits on requests.
+- - Provider abstractapi requires that free tier users must request holidays for each day individually. With a limit of 10,000 requests per month this indicates that the holidays for the next 320 days could be requested each day (31*320 = 9,920). However, requesting 300 dates at a time seemed to cause server issues, so I cut back to the next 45 days (just over 6 weeks).
+- - The responses are merged with the existing holidays, including deleting holidays previously received from an API that are no longer currently tagged as holidays.
 - - Manually input holidays will be merged with API holidays. However, manually input holidays will not be deleted.
 - Criteria for further Holiday API providers:
 - - Have completely free access or a free access tier with at least 100 calendar year requests per month, or 1,000 individual holiday requests per month.
