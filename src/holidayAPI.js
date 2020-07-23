@@ -16,6 +16,8 @@ function getAPIdates(api, context, merge, setStatus) {
     return getCalendarificDates(api, context, merge, setStatus);
   } else if (api.provider === 'date.nager.at') {
     return getNagerDates(api, context, merge, setStatus);
+  } else if (api.provider === 'holidays.abstractapi.com') {
+    return getAbstractAPIDates(api, context, merge, setStatus);
   }
   return {};
 }
@@ -164,6 +166,62 @@ function getNagerDates(api, context, merge, setStatus) {
     });
 }
 
+
+function getAbstractAPIDates(api, context, merge, setStatus) {
+  const requestDays = 45;
+  const apiDates = [];
+  const ENDPOINT = 'https://holidays.abstractapi.com/v1/?api_key=';
+  if (!api.key) {
+    setStatus(`no Key configured for ${api.provider}`, context);
+    throw new Error(`no Key configured for ${api.provider}`);
+  }
+  if (!api.country) {
+    setStatus(`no Country configured for ${api.provider}`, context);
+    throw new Error(`no Country configured for ${api.provider}`);
+  }
+  const promises = [];
+  const d = new Date();
+  for (let i = 0; i <= requestDays; i++) {
+    const reqStr = applyParams(`${ENDPOINT}${api.key}`,
+                               {country: api.country.trim().toUpperCase(),
+                                year: d.getFullYear(),
+                                month: d.getMonth() + 1,
+                                day: d.getDate()});
+    console.log(reqStr);
+    promises.push(fetch(reqStr));
+    d.setDate(d.getDate() + 1);
+  }
+  let i = 0;
+  Promise.all(promises)
+    .then((results) => {
+      results.forEach((response) => {
+        if (!response.ok) {
+          throw new Error(`api response status: ${response.status} - ${response.statusText}`);
+        }
+        response.json()
+          .then((json) => {
+            json.forEach((item) => {
+              if (item.type === 'public_holiday') {
+                apiDates.push({date: `${item.date_year}-${item.date_month}-${item.date_day}`,
+                               dateType: 'holiday',
+                               source: api.provider,
+                               reason: item.local_name || item.name});
+              }
+            });
+            if (i >= requestDays) {
+              setStatus('ok', context);
+              merge(apiDates, context);
+            }
+            i += 1;
+          });
+      });
+    })
+    .catch((e) => {
+      console.error(e);
+      setStatus(e.message, context);
+      merge([], context);
+    });
+}
 
 function applyParams(req, params) {
   let result = req;
