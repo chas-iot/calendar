@@ -10,6 +10,7 @@
 
 const fetch = require('node-fetch');
 
+
 function getAPIdates(api, context, merge, setStatus) {
   if (api.provider === 'calendarific.com') {
     return getCalendarificDates(api, context, merge, setStatus);
@@ -18,6 +19,7 @@ function getAPIdates(api, context, merge, setStatus) {
   }
   return {};
 }
+
 
 function getCalendarificDates(api, context, merge, setStatus) {
   const ENDPOINT = 'https://calendarific.com/api/v2/holidays?&api_key=';
@@ -94,6 +96,7 @@ function getCalendarificDates(api, context, merge, setStatus) {
     });
 }
 
+
 function getNagerDates(api, context, merge, setStatus) {
   const ENDPOINT = 'https://date.nager.at/api/v2/publicholidays';
   const apiDates = [];
@@ -165,6 +168,7 @@ function getNagerDates(api, context, merge, setStatus) {
     });
 }
 
+
 function applyParams(req, params) {
   let result = req;
   for (const p in params) {
@@ -172,5 +176,6 @@ function applyParams(req, params) {
   }
   return result;
 }
+
 
 module.exports = getAPIdates;
