@@ -71,7 +71,7 @@ function normaliseDatesArray(dates, dateStr) {
     } else if (a.date > b.date) {
       return +1;
 
-    // note reversal of comparison, so sorting is 'working' first, then 'event', and 'holiday' last
+    // note reversal of comparison, so sorting is 'working' first, then 'holiday', and 'event' last
     } else if (a.dateType > b.dateType) {
       return -1;
     } else if (a.dateType < b.dateType) {
@@ -86,7 +86,6 @@ function normaliseDatesArray(dates, dateStr) {
       // increment the year and add a modified copy to the end of the array
       dates[0].date =
         `${Number.parseInt(dates[0].date.substr(0, 4)) + 1}${dates[0].date.substr(4, 6)}`;
-      console.log(dates[0].date);
       dates.push(dates[0]);
       // while this may unorder the dates, it will be fixed within an hour
     }
