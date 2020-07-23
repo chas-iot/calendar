@@ -40,7 +40,6 @@ function getCalendarificDates(api, context, merge, setStatus) {
   fetch(reqStr)
     .then((response) => {
       if (!response.ok) {
-        setStatus(`api response status: ${response.status} - ${response.statusText}`, context);
         throw new Error(`api response status: ${response.status} - ${response.statusText}`);
       }
       return response.json();
@@ -55,7 +54,6 @@ function getCalendarificDates(api, context, merge, setStatus) {
         });
       } else {
         console.error(JSON.stringify(json, null, 2));
-        setStatus('missing dates in response', context);
         throw new Error('missing dates in response');
       }
     })
@@ -69,7 +67,6 @@ function getCalendarificDates(api, context, merge, setStatus) {
     })
     .then((response) => {
       if (!response.ok) {
-        setStatus(`api response status: ${response.status} - ${response.statusText}`, context);
         throw new Error(`api response status: ${response.status} - ${response.statusText}`);
       }
       return response.json();
@@ -84,7 +81,6 @@ function getCalendarificDates(api, context, merge, setStatus) {
         });
       } else {
         console.error(JSON.stringify(json, null, 2));
-        setStatus('missing dates in response', context);
         throw new Error('missing dates in response');
       }
       setStatus('ok', context);
@@ -92,6 +88,7 @@ function getCalendarificDates(api, context, merge, setStatus) {
     })
     .catch((e) => {
       console.error(e);
+      setStatus(e.message, context);
       merge([], context);
     });
 }
@@ -113,7 +110,6 @@ function getNagerDates(api, context, merge, setStatus) {
   fetch(reqStr)
     .then((response) => {
       if (!response.ok) {
-        setStatus(`api response status: ${response.status} - ${response.statusText}`, context);
         throw new Error(`api response status: ${response.status} - ${response.statusText}`);
       }
       return response.json();
@@ -140,7 +136,6 @@ function getNagerDates(api, context, merge, setStatus) {
     })
     .then((response) => {
       if (!response.ok) {
-        setStatus(`api response status: ${response.status} - ${response.statusText}`, context);
         throw new Error(`api response status: ${response.status} - ${response.statusText}`);
       }
       return response.json();
@@ -164,6 +159,7 @@ function getNagerDates(api, context, merge, setStatus) {
     })
     .catch((e) => {
       console.error(e);
+      setStatus(e.message, context);
       merge([], context);
     });
 }
