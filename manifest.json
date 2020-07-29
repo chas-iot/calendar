@@ -63,7 +63,7 @@
             "provider": {
               "type": "string",
               "title": "Provider",
-              "enum": ["calendarific.com", "date.nager.at", "holidays.abstractapi.com"]
+              "enum": ["calendarific.com", "date.nager.at"]
             },
               "key": {
               "type": "string",

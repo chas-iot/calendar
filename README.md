@@ -37,13 +37,13 @@ The API provider may not be able to keep up with these changes or may choose to 
 - Supported Holiday API providers
 - - https://calendarific.com/
 - - https://date.nager.at/
-- - https://holidays.abstractapi.com
+- - ~~https://holidays.abstractapi.com~~ The provider changed the free tier of this API, resulting in it being unusable for the purposes of this addon. While this situation is unfortunate, it is entirely their right to make these changes and they have no obligation to support non-paying users.
 - Automatic holiday updates
 - - Sometimes governments add public holidays at very short notice.
 - - Some religious holidays cannot be reliably predicted until just before the occurrence, so governments add an indicative placeholder and change the actual date when it becomes known.
 - - Once per day, a new set of holidays are requested.
 - - Providers calendarific and nager both deliver holidays for a specified calendar year, therefore the current year and next year are requested. This uses up to 62 requests per month, if the provider has limits on requests.
-- - Provider abstractapi requires that free tier users must request holidays for each day individually. With a limit of 10,000 requests per month this indicates that the holidays for the next 320 days could be requested each day (31*320 = 9,920). However, requesting 300 dates at a time seemed to cause server issues, so I cut back to the next 45 days (just over 6 weeks).
+- - ~~Provider abstractapi requires that free tier users must request holidays for each day individually. With a limit of 10,000 requests per month this indicates that the holidays for the next 320 days could be requested each day (31*320 = 9,920). However, requesting 300 dates at a time seemed to cause server issues, so I cut back to the next 45 days (just over 6 weeks).~~ This provider is no longer supported.
 - - The responses are merged with the existing holidays, including deleting holidays previously received from an API that are no longer currently tagged as holidays.
 - - Manually input holidays will be merged with API holidays. However, manually input holidays will not be deleted.
 - Criteria for further Holiday API providers:
