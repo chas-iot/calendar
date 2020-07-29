@@ -35,23 +35,6 @@ function getTodayStr() {
 }
 
 
-// get the day name
-// fixme - localise the day name
-function getDayName() {
-  // return new Intl.DateTimeFormat({weekday: 'long'}).format(new Date());
-  const t = new Date().getDay();
-  /* eslint-disable curly */
-  if (t === 0) return 'Sunday';
-  if (t === 1) return 'Monday';
-  if (t === 2) return 'Tuesday';
-  if (t === 3) return 'Wednesday';
-  if (t === 4) return 'Thursday';
-  if (t === 5) return 'Friday';
-  if (t === 6) return 'Saturday';
-  /* eslint-enable curly */
-}
-
-
 // sort, remove duplicates and other transformations required to handle dates
 function normaliseDatesArray(dates, dateStr) {
   // eslint-disable-next-line curly
@@ -300,14 +283,14 @@ class CalendarAdapter extends Adapter {
         this.source.set('added locally');
       }
       if (this.reason.get() === '') {
-        this.reason.set(getDayName());
+        this.reason.set(this.getDayName());
       }
     } else {
       this.holiday.set(false);
       this.workingDay.set(this.workWeek[new Date().getDay()]);
       this.tag.set('');
       this.source.set('');
-      this.reason.set(getDayName());
+      this.reason.set(this.getDayName());
     }
   }
 
@@ -417,6 +400,13 @@ class CalendarAdapter extends Adapter {
     that.config.api.status = message;
     that.config.changed = true;
   }
+
+
+  // get the day name
+  getDayName() {
+    return new Date().toLocaleDateString(this.preferences.language, {weekday: 'long'});
+  }
+
 
 }
 
