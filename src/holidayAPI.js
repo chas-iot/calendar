@@ -166,8 +166,11 @@ function getNagerDates(api, context, merge, setStatus) {
     });
 }
 
-
+// abstractapi changed their free tier in ways that made it no longer supportable
 function getAbstractAPIDates(api, context, merge, setStatus) {
+  setStatus('abstractapi no longer supported', context);
+  merge([], context);
+  /*
   const requestDays = 45;
   const apiDates = [];
   const ENDPOINT = 'https://holidays.abstractapi.com/v1/?api_key=';
@@ -221,6 +224,7 @@ function getAbstractAPIDates(api, context, merge, setStatus) {
       setStatus(e.message, context);
       merge([], context);
     });
+  */
 }
 
 function applyParams(req, params) {
