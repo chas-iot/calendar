@@ -13,9 +13,10 @@ const HOUR = 60 * 60 * 1000;
 const manifest = require('../manifest.json');
 const {
   Adapter,
-  Device,
-  Property,
   Database,
+  Device,
+  Event,
+  Property,
 } = require('gateway-addon');
 const getAPIdates = require('./holidayAPI');
 
@@ -151,6 +152,10 @@ class CalendarDevice extends Device {
       type: 'string',
       readOnly: true,
     }));
+    this.addEvent('APIerror',
+                  {title: 'API error',
+                   description: 'Details of an error encountered while using the Holiday API',
+                   type: 'string'});
   }
 }
 
@@ -162,6 +167,7 @@ class CalendarAdapter extends Adapter {
 
     const device = new CalendarDevice(this, manifest.id);
     this.handleDeviceAdded(device);
+    this.device = device;
 
     this.holiday = device.findProperty('isHoliday');
     this.workingDay = device.findProperty('isWorkingDay');
@@ -297,9 +303,7 @@ class CalendarAdapter extends Adapter {
 
   // passed to the dates API requester to merge any received dates into the configured dates
   merge(apiDates, that) {
-    if (!that) {
-      that = this;
-    }
+    that = that || this;
     normaliseDatesArray(apiDates, getTodayStr());
 
     if (apiDates.length > 0) {
@@ -394,9 +398,8 @@ class CalendarAdapter extends Adapter {
 
   // passed to the dates API requester to allow it to update the status
   setStatus(message, that) {
-    if (!that) {
-      that = this;
-    }
+    that = that || this;
+    that.device.eventNotify(new Event(that.device, 'APIerror', message));
     that.config.api.status = message;
     that.config.changed = true;
   }
