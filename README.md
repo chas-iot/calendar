@@ -34,6 +34,8 @@ The API provider may not be able to keep up with these changes or may choose to 
 - - if there are multiple entries for the same Date and Type, then the duplicates are merged;
 - - if there are multiple entries for the same Date with different Types, then sorted so Working is most important, then Holiday, and finally Event; and
 - - on the Thing display, if there are multiple dates, then the Reason and Tag are each filled from the most important non-blank entry.
+- Events / error reporting
+- - APIerror allows rules to send notifications when the API fails, after say, several months of working.
 - Supported Holiday API providers
 - - https://calendarific.com/
 - - https://date.nager.at/
