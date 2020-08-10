@@ -233,7 +233,10 @@ class CalendarAdapter extends Adapter {
         }
         , getOffsetToHour());
       })
-      .catch((e) => console.error(e));
+      .catch((e) => {
+        console.error(e);
+        this.device.eventNotify(new Event(this.device, 'APIerror', e.message));
+      });
   }
 
 
@@ -259,7 +262,10 @@ class CalendarAdapter extends Adapter {
       delete this.config.changed;
       this.db.saveConfig(this.config)
         .then(() => console.log('updateCalendar changed config'))
-        .catch((e) => console.error(e));
+        .catch((e) => {
+          console.error(e);
+          this.device.eventNotify(new Event(this.device, 'APIerror', e.message));
+        });
     }
 
     // we don't need to wait for the database save to complete before updating the gateway
@@ -277,30 +283,24 @@ class CalendarAdapter extends Adapter {
 
       let i = 0;
       while (i < this.dateList.length && dateStr === this.dateList[i].date) {
-        reason = reason ||
-          this.dateList[i].reason;
-
-        tag = tag ||
-          this.dateList[i].tag;
-
-        source = source ||
-          this.dateList[i].source;
+        reason = reason || this.dateList[i].reason;
+        tag = tag || this.dateList[i].tag;
+        source = source || this.dateList[i].source;
         i++;
       }
 
       if ((reason || tag) && !source) {
-        source = 'added locally';
-      }
-      if (!reason) {
-        reason = this.getDayName();
+        source = 'manual input';
       }
     } else {
       this.holiday.set(false);
       this.workingDay.set(this.workWeek[new Date().getDay()]);
+    }
+    if (!reason) {
       reason = this.getDayName();
     }
-    this.tag.set(tag);
     this.reason.set(reason);
+    this.tag.set(tag);
     this.source.set(source);
   }
 
@@ -381,9 +381,11 @@ class CalendarAdapter extends Adapter {
 
         // not a good place to be
         } else {
-          that.config.api.status = 'merge from API failed due to programming error';
+          const message = 'merge from API failed due to programming error';
+          console.error(message);
+          that.config.api.status = message;
+          that.device.eventNotify(new Event(that.device, 'APIerror', message));
           that.config.changed = true;
-          console.error('merge from API failed due to programming error');
           holPos = holidays.length;
           apiPos = apiDates.length;
         }
@@ -395,7 +397,10 @@ class CalendarAdapter extends Adapter {
       delete that.config.changed;
       that.db.saveConfig(that.config)
         .then(() => console.log('merge/getAPIdates changed config'))
-        .catch((e) => console.error(e));
+        .catch((e) => {
+          console.error(e);
+          that.device.eventNotify(new Event(that.device, 'APIerror', e.message));
+        });
     }
   }
 
