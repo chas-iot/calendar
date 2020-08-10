@@ -398,10 +398,14 @@ class CalendarAdapter extends Adapter {
 
   // passed to the dates API requester to allow it to update the status
   setStatus(message, that) {
-    that = that || this;
-    that.device.eventNotify(new Event(that.device, 'APIerror', message));
-    that.config.api.status = message;
-    that.config.changed = true;
+    if (message) {
+      that = that || this;
+      if (message.toUpperCase() !== 'OK') {
+        that.device.eventNotify(new Event(that.device, 'APIerror', message));
+      }
+      that.config.api.status = message;
+      that.config.changed = true;
+    }
   }
 
 
