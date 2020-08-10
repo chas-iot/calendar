@@ -263,6 +263,9 @@ class CalendarAdapter extends Adapter {
     }
 
     // we don't need to wait for the database save to complete before updating the gateway
+    let reason = '';
+    let tag = '';
+    let source = '';
     if (this.dateList.length > 0 && dateStr === this.dateList[0].date) {
       this.holiday.set(this.dateList[0].dateType === 'holiday');
 
@@ -274,30 +277,31 @@ class CalendarAdapter extends Adapter {
 
       let i = 0;
       while (i < this.dateList.length && dateStr === this.dateList[i].date) {
-        if (!this.reason.get() || this.reason.get() === '') {
-          this.reason.set(this.dateList[i].reason || '');
-        }
-        if (!this.tag.get() || this.tag.get() === '') {
-          this.tag.set(this.dateList[i].tag || '');
-        }
-        if (!this.source.get() || this.source.get() === '') {
-          this.source.set(this.dateList[i].source || '');
-        }
+        reason = reason ||
+          this.dateList[i].reason;
+
+        tag = tag ||
+          this.dateList[i].tag;
+
+        source = source ||
+          this.dateList[i].source;
         i++;
       }
-      if (this.source.get() === '') {
-        this.source.set('added locally');
+
+      if ((reason || tag) && !source) {
+        source = 'added locally';
       }
-      if (this.reason.get() === '') {
-        this.reason.set(this.getDayName());
+      if (!reason) {
+        reason = this.getDayName();
       }
     } else {
       this.holiday.set(false);
       this.workingDay.set(this.workWeek[new Date().getDay()]);
-      this.tag.set('');
-      this.source.set('');
-      this.reason.set(this.getDayName());
+      reason = this.getDayName();
     }
+    this.tag.set(tag);
+    this.reason.set(reason);
+    this.source.set(source);
   }
 
 
