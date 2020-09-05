@@ -157,6 +157,13 @@ class CalendarDevice extends Device {
                    description: 'Details of an error encountered while using the Holiday API',
                    type: 'string'});
   }
+
+  addLink(link) {
+    this.links.push({rel: 'alternate',
+                     mediaType: 'text/html',
+                     href: link});
+  }
+
 }
 
 
@@ -166,7 +173,6 @@ class CalendarAdapter extends Adapter {
     addonManager.addAdapter(this);
 
     const device = new CalendarDevice(this, manifest.id);
-    this.handleDeviceAdded(device);
     this.device = device;
 
     this.holiday = device.findProperty('isHoliday');
@@ -213,6 +219,11 @@ class CalendarAdapter extends Adapter {
           config.api.region = config.api.region.trim();
           config.changed = true;
         }
+
+        if (config.api.provider) {
+          device.addLink(`https://${config.api.provider}`);
+        }
+        this.handleDeviceAdded(device);
 
         // sort, and remove expired dates
         // the date checks depend on these invariants
