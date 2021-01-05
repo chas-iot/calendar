@@ -1,5 +1,5 @@
 {
-  "version": "1.1.1",
+  "version": "1.1.2",
   "name": "calendar",
   "display_name": "Calendar",
   "description": "Provides calendar management of the working week, holidays, and other event dates. This is to support rules such as disabling a wakeup alarm on public or personal holidays.",
